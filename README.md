@@ -57,6 +57,7 @@ Un `id` est généré lors de l’insertion en base pour permettre :
 
 ## 4. Architecture du projet
 
+'''text
 demo_mcp_paysim/
 ├── docker-compose.yml
 ├── db/
@@ -73,7 +74,7 @@ demo_mcp_paysim/
 ├── scripts/
 │   └── test_calls.py
 └── output/
-
+'''
 ---
 
 ## 5. Outils utilisés et leur rôle
