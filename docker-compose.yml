@@ -1,0 +1,78 @@
+services:
+  db:
+    image: postgres:15
+    container_name: paysim_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: paysim
+      POSTGRES_PASSWORD: paysim
+      POSTGRES_DB: paysim
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - paysim_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paysim -d paysim -h 127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  loader:
+    image: python:3.10-slim
+    container_name: paysim_loader
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: paysim
+      DB_USER: paysim
+      DB_PASSWORD: paysim
+      CSV_PATH: /data/paysim_small.csv
+      MAX_ROWS: "50000"
+    volumes:
+      - ./data:/data
+      - ./loader:/scripts
+    command: ["bash", "-lc", "pip install --no-cache-dir pandas psycopg2-binary && python /scripts/load_paysim.py"]
+
+  mcp_server:
+    image: python:3.10-slim
+    container_name: paysim_mcp_server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      loader:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: paysim
+      DB_USER: paysim
+      DB_PASSWORD: paysim
+      MCP_HTTP_HOST: 0.0.0.0
+      MCP_HTTP_PORT: "8765"
+      DB_CONNECT_TIMEOUT: "5"
+      DB_STATEMENT_TIMEOUT_MS: "30000"
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./server:/server
+      - ./output:/output
+    command: ["bash", "-lc", "pip install --no-cache-dir psycopg2-binary && python /server/mcp_server_paysim.py --http --host 0.0.0.0 --port 8765"]
+    healthcheck:
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import json,urllib.request,sys; req=urllib.request.Request('http://127.0.0.1:8765/rpc', data=json.dumps({'jsonrpc':'2.0','id':1,'method':'initialize','params':{}}).encode(), headers={'Content-Type':'application/json'}); sys.exit(0 if urllib.request.urlopen(req,timeout=2).status==200 else 1)"
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+volumes:
+  paysim_data:

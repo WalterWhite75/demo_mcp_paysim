@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+
+# Data (volumineux ou dérivés)
+data/paysim.csv
+data/*.parquet
+
+# Outputs / logs
+output/
+*.log
+
+# Docker
+*.pid
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
