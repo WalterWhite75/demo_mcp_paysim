@@ -77,6 +77,8 @@ demo_mcp_paysim/
 │   └── test_calls.py
 └── output/
     └── mcp_server.log
+'''
+---
 ## 5. Outils utilisés et leur rôle
 
 ### Docker & Docker Compose
