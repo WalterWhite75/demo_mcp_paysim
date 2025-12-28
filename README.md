@@ -57,9 +57,11 @@ Un `id` est généré lors de l’insertion en base pour permettre :
 
 ## 4. Architecture du projet
 
-'''text
+```text
 demo_mcp_paysim/
 ├── docker-compose.yml
+├── README.md
+├── .gitignore
 ├── db/
 │   └── schema.sql
 ├── data/
@@ -74,7 +76,8 @@ demo_mcp_paysim/
 ├── scripts/
 │   └── test_calls.py
 └── output/
-'''
+    └── mcp_server.log
+```
 ---
 
 ## 5. Outils utilisés et leur rôle
@@ -150,3 +153,4 @@ Exemples de règles :
 ```bash
 docker compose down -v
 docker compose up -d
+```
